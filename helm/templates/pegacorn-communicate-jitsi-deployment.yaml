@@ -1,0 +1,168 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project={{ .Values.serviceName }}&var-version={{ .Values.imageTag }}
+  labels:
+    app: {{ .Values.serviceName }}
+    provider: fabric8
+    version: "{{ .Values.imageTag }}"
+    group: net.fhirbox.pegacorn
+  name: {{ .Values.serviceName }}
+spec:
+  replicas: {{ .Values.numOfPods | default 2 }}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: {{ .Values.serviceName }}
+      provider: fabric8
+      group: net.fhirbox.pegacorn
+  template:
+    metadata:
+      annotations:
+        fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project={{ .Values.serviceName }}&var-version={{ .Values.imageTag }}
+      labels:
+        app: {{ .Values.serviceName }}
+        provider: fabric8
+        version: "{{ .Values.imageTag }}"
+        group: net.fhirbox.pegacorn
+        date: "{{ date "20060102-150405" .Release.Time }}"
+    spec:
+      volumes:
+      - name: prosody-config
+        hostPath:
+          path: {{ .Values.hostPathProsody }}
+      containers:
+      # Configure jicofo
+        - name: jicofo
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jicofo:{{ .Values.imageTag }}            
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          env:
+            - name: XMPP_SERVER
+              value: localhost
+            - name: XMPP_DOMAIN
+              value: meet.jitsi
+            - name: XMPP_AUTH_DOMAIN
+              value: auth.meet.jitsi
+            - name: XMPP_MUC_DOMAIN
+              value: muc.meet.jitsi
+            - name: XMPP_INTERNAL_MUC_DOMAIN
+              value: internal-muc.meet.jitsi
+            - name: JICOFO_COMPONENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jitsi-config
+                  key: JICOFO_COMPONENT_SECRET
+            - name: JICOFO_AUTH_USER
+              value: focus
+            - name: JICOFO_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jitsi-config
+                  key: JICOFO_AUTH_PASSWORD
+            - name: TZ
+              value: Australia/Sydney
+            - name: JVB_BREWERY_MUC
+              value: jvbbrewery      
+      # Configure prosody
+        - name: prosody
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-prosody:{{ .Values.imageTag }}            
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          volumeMounts:
+          - name: prosody-config
+            mountPath: /etc/prosody
+          env:
+            - name: XMPP_DOMAIN
+              value: meet.jitsi
+            - name: XMPP_AUTH_DOMAIN
+              value: auth.meet.jitsi
+            - name: XMPP_MUC_DOMAIN
+              value: muc.meet.jitsi
+            - name: XMPP_INTERNAL_MUC_DOMAIN
+              value: internal-muc.meet.jitsi
+            - name: JICOFO_COMPONENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jitsi-config
+                  key: JICOFO_COMPONENT_SECRET
+            - name: JVB_AUTH_USER
+              value: jvb
+            - name: JVB_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jitsi-config
+                  key: JVB_AUTH_PASSWORD
+            - name: JICOFO_AUTH_USER
+              value: focus
+            - name: JICOFO_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jitsi-config
+                  key: JICOFO_AUTH_PASSWORD
+            - name: TZ
+              value: Australia/Sydney
+            - name: JVB_TCP_HARVESTER_DISABLED
+              value: "true"
+      # Configure nginx
+        - name: nginx
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-web:{{ .Values.imageTag }}            
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          env:
+            - name: XMPP_SERVER
+              value: localhost
+            - name: JICOFO_AUTH_USER
+              value: focus
+            - name: XMPP_DOMAIN
+              value: meet.jitsi
+            - name: XMPP_AUTH_DOMAIN
+              value: auth.meet.jitsi
+            - name: XMPP_INTERNAL_MUC_DOMAIN
+              value: internal-muc.meet.jitsi
+            - name: XMPP_BOSH_URL_BASE
+              value: http://127.0.0.1:5280
+            - name: XMPP_MUC_DOMAIN
+              value: muc.meet.jitsi
+            - name: TZ
+              value: Australia/Sydney
+            - name: JVB_TCP_HARVESTER_DISABLED
+              value: "true"
+      # Configure jvb
+        - name: jvb
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jvb:{{ .Values.imageTag }}            
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          env:
+            - name: XMPP_SERVER
+              value: localhost
+            - name: DOCKER_HOST_ADDRESS
+              value: 192.168.0.5 # <Set the address for any node in the cluster here>
+            - name: XMPP_DOMAIN
+              value: meet.jitsi
+            - name: XMPP_AUTH_DOMAIN
+              value: auth.meet.jitsi
+            - name: XMPP_INTERNAL_MUC_DOMAIN
+              value: internal-muc.meet.jitsi
+            - name: JVB_STUN_SERVERS
+              value: stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302
+            - name: JICOFO_AUTH_USER
+              value: focus
+            - name: JVB_TCP_HARVESTER_DISABLED
+              value: "true"
+            - name: JVB_AUTH_USER
+              value: jvb
+            - name: JVB_PORT
+              value: "30300"
+            - name: JVB_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jitsi-config
+                  key: JVB_AUTH_PASSWORD
+            - name: JICOFO_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jitsi-config
+                  key: JICOFO_AUTH_PASSWORD
+            - name: TZ
+              value: Australia/Sydney
+            - name: JVB_BREWERY_MUC
+              value: jvbbrewery

@@ -1,0 +1,7 @@
+---
+name: pegacorn-communicate-jitsi
+sources:
+- https://github.com/jitsi/docker-jitsi-meet
+version: 1.0.0-SNAPSHOT
+description: Pegacorn Communicate Jitsi.
+icon: img/icons/camel.svg
