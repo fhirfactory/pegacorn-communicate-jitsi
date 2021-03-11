@@ -33,22 +33,29 @@ spec:
       - name: prosody-config
         hostPath:
           path: {{ .Values.hostPathProsody }}
+      - name: nginx-certs
+        hostPath:
+          path: {{ .Values.hostPathNginx }}
       containers:
       # Configure jicofo
         - name: jicofo
           image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jicofo:{{ .Values.imageTag }}            
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash","-c","service jicofo start"]
           env:
             - name: XMPP_SERVER
-              value: localhost
+              value: pegacorn-communicate-jitsi.site-a
             - name: XMPP_DOMAIN
-              value: meet.jitsi
+              value: pegacorn-communicate-jitsi.site-a
             - name: XMPP_AUTH_DOMAIN
-              value: auth.meet.jitsi
+              value: auth.pegacorn-communicate-jitsi.site-a
             - name: XMPP_MUC_DOMAIN
-              value: muc.meet.jitsi
+              value: muc.pegacorn-communicate-jitsi.site-a
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.meet.jitsi
+              value: internal-muc.pegacorn-communicate-jitsi.site-a
             - name: JICOFO_COMPONENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -69,18 +76,33 @@ spec:
         - name: prosody
           image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-prosody:{{ .Values.imageTag }}            
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          ports:
+          - containerPort: 5222
+            name: jitsi-xmpp
+            protocol: TCP
+          - containerPort: 5347
+            name: jitsi-jicofo
+            protocol: TCP
+          - containerPort: 5280
+            name: jitsi-bosh
+            protocol: TCP
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash","-c","service prosody start"]
+                command: ["/bin/bash","-c","chmod -R 777 /etc/prosody"]
           volumeMounts:
           - name: prosody-config
             mountPath: /etc/prosody
           env:
             - name: XMPP_DOMAIN
-              value: meet.jitsi
+              value: pegacorn-communicate-jitsi.site-a
             - name: XMPP_AUTH_DOMAIN
-              value: auth.meet.jitsi
+              value: auth.pegacorn-communicate-jitsi.site-a
             - name: XMPP_MUC_DOMAIN
-              value: muc.meet.jitsi
+              value: muc.pegacorn-communicate-jitsi.site-a
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.meet.jitsi
+              value: internal-muc.pegacorn-communicate-jitsi.site-a
             - name: JICOFO_COMPONENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -108,21 +130,31 @@ spec:
         - name: nginx
           image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-web:{{ .Values.imageTag }}            
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          volumeMounts:
+          - name: nginx-certs
+            mountPath: /config/keys
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          - containerPort: 443
+            name: https
+            protocol: TCP
           env:
             - name: XMPP_SERVER
-              value: localhost
+              value: pegacorn-communicate-jitsi.site-a
             - name: JICOFO_AUTH_USER
               value: focus
             - name: XMPP_DOMAIN
-              value: meet.jitsi
+              value: pegacorn-communicate-jitsi.site-a
             - name: XMPP_AUTH_DOMAIN
-              value: auth.meet.jitsi
+              value: auth.pegacorn-communicate-jitsi.site-a
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.meet.jitsi
+              value: internal-muc.pegacorn-communicate-jitsi.site-a
             - name: XMPP_BOSH_URL_BASE
-              value: http://127.0.0.1:5280
+              value: http://pegacorn-communicate-jitsi.site-a:5280/http-bind/
             - name: XMPP_MUC_DOMAIN
-              value: muc.meet.jitsi
+              value: muc.pegacorn-communicate-jitsi.site-a
             - name: TZ
               value: Australia/Sydney
             - name: JVB_TCP_HARVESTER_DISABLED
@@ -131,17 +163,21 @@ spec:
         - name: jvb
           image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jvb:{{ .Values.imageTag }}            
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash","-c","service jitsi-videobridge2 start"]
           env:
             - name: XMPP_SERVER
-              value: localhost
+              value: pegacorn-communicate-jitsi.site-a
             - name: DOCKER_HOST_ADDRESS
-              value: 192.168.0.5 # <Set the address for any node in the cluster here>
+              value: "192.168.0.10" # <Set the address for any node in the cluster here>
             - name: XMPP_DOMAIN
-              value: meet.jitsi
+              value: pegacorn-communicate-jitsi.site-a
             - name: XMPP_AUTH_DOMAIN
-              value: auth.meet.jitsi
+              value: auth.pegacorn-communicate-jitsi.site-a
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.meet.jitsi
+              value: internal-muc.pegacorn-communicate-jitsi.site-a
             - name: JVB_STUN_SERVERS
               value: stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302
             - name: JICOFO_AUTH_USER

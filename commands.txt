@@ -1,0 +1,21 @@
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-communicate-jitsi-jicofo:1.0.0-snapshot .
+
+helm upgrade pegacorn-communicate-jitsi-site-a --install --namespace site-a --set serviceName=pegacorn-communicate-jitsi,basePort=30300,imagePullPolicy=Never,imageTag=1.0.0-snapshot,hostPathProsody=/data/jitsi/prosody,hostPathNginx=/data/jitsi/nginx-conf/certs,numOfPods=1 helm
+
+# https://stackoverflow.com/questions/46247032/how-to-solve-invoke-rc-d-policy-rc-d-denied-execution-of-start-when-building
+# Without this command, jicofo will not start		
+RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
+
+# Useful links
+https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker
+
+https://www.youtube.com/watch?v=IQRwtUamHQU
+
+# Prosody troubleshooting
+https://prosody.im/doc/troubleshooting
+
+# Prosody certs config
+https://prosody.im/doc/certificates
+
+# Prosody DNS config
+https://prosody.im/doc/dns

@@ -39,10 +39,14 @@ spec:
     port: 443
     protocol: TCP
     targetPort: 443
-  - name: jitsi-poc
+  - name: jitsi-xmpp
     port: 5222
     protocol: TCP
     targetPort: 5222
+  - name: jitsi-bosh
+    port: 5280
+    protocol: TCP
+    targetPort: 5280
   - name: jitsi-jicofo
     port: 5347
     protocol: TCP
