@@ -33,9 +33,6 @@ spec:
       - name: prosody-config
         hostPath:
           path: {{ .Values.hostPathProsody }}
-      - name: nginx-certs
-        hostPath:
-          path: {{ .Values.hostPathNginx }}
       containers:
       # Configure jicofo
         - name: jicofo
@@ -130,9 +127,6 @@ spec:
         - name: nginx
           image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-web:{{ .Values.imageTag }}            
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
-          volumeMounts:
-          - name: nginx-certs
-            mountPath: /config/keys
           ports:
           - containerPort: 80
             name: http
@@ -152,7 +146,7 @@ spec:
             - name: XMPP_INTERNAL_MUC_DOMAIN
               value: internal-muc.pegacorn-communicate-jitsi.site-a
             - name: XMPP_BOSH_URL_BASE
-              value: http://pegacorn-communicate-jitsi.site-a:5280/http-bind/
+              value: http://127.0.0.1:5280
             - name: XMPP_MUC_DOMAIN
               value: muc.pegacorn-communicate-jitsi.site-a
             - name: TZ

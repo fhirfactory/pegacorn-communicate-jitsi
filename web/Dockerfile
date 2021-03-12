@@ -14,6 +14,9 @@ RUN \
 	apt-cleanup && \
 	rm -rf /tmp/pkg /var/cache/apt
 
+COPY pegacorn-communicate-jitsi.site-a.key /config/keys
+COPY pegacorn-communicate-jitsi.site-a.crt /config/keys
+
 # Date-time build argument
 ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
