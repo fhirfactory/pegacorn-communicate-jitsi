@@ -20,17 +20,6 @@ metadata:
   name: {{ .Values.serviceName }}
 spec:
   ports:  
-  - name: services
-    port: {{ .Values.basePort }}
-    protocol: UDP
-    targetPort: 30300
-    nodePort: {{ if (.Values.serviceType) and (eq .Values.serviceType "NodePort")}} {{ .Values.basePort }} {{ end }}
-  selector:
-    app: {{ .Values.serviceName }}
-    provider: fabric8
-    group: net.fhirbox.pegacorn
-spec:
-  ports:  
   - name: http
     port: 80
     protocol: TCP
@@ -39,18 +28,26 @@ spec:
     port: 443
     protocol: TCP
     targetPort: 443
-  - name: jitsi-xmpp
+  - name: xmpp-client
     port: 5222
     protocol: TCP
     targetPort: 5222
+  - name: xmpp-server
+    port: 5269
+    protocol: TCP
+    targetPort: 5269
   - name: jitsi-bosh
     port: 5280
     protocol: TCP
     targetPort: 5280
+  - name: bosh-https
+    port: 5281
+    protocol: TCP
+    targetPort: 5281
   - name: jitsi-jicofo
     port: 5347
     protocol: TCP
-    targetPort: 5347     
+    targetPort: 5347    
   selector:
     app: {{ .Values.serviceName }}
     provider: fabric8

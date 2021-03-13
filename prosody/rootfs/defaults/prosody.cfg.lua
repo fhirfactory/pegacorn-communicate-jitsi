@@ -22,7 +22,16 @@
 -- for the server. Note that you must create the accounts separately
 -- (see http://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
-admins = { }
+admins = {
+    "focus@auth.pegacorn-communicate-jitsi.site-a",
+    "jvb@auth.pegacorn-communicate-jitsi.site-a"
+}
+consider_bosh_secure = true;
+cross_domain_bosh = true;
+https_ssl = {
+	certificate = "/config/certs/auth.pegacorn-communicate-jitsi.site-a.crt";
+	key = "/config/certs/auth.pegacorn-communicate-jitsi.site-a.key";
+}
 
 -- Enable use of libevent for better performance under high load
 -- For more information see: http://prosody.im/doc/libevent
@@ -61,7 +70,7 @@ modules_enabled = {
 		--"admin_telnet"; -- Opens telnet console interface on localhost port 5582
 
 	-- HTTP modules
-		--"bosh"; -- Enable BOSH clients, aka "Jabber over HTTP"
+		"bosh"; -- Enable BOSH clients, aka "Jabber over HTTP"
 		--"http_files"; -- Serve static files from a directory over HTTP
 
 	-- Other specific functionality
@@ -72,9 +81,7 @@ modules_enabled = {
 		--"watchregistrations"; -- Alert admins of registrations
 		--"motd"; -- Send a message to users when they log in
 		--"legacyauth"; -- Legacy authentication. Only used by some old clients and bots.
-        {{ if .Env.GLOBAL_MODULES }}
-        "{{ join "\";\n\"" (splitList "," .Env.GLOBAL_MODULES) }}";
-        {{ end }}
+        
 };
 
 https_ports = { }
@@ -84,21 +91,23 @@ https_ports = { }
 modules_disabled = {
 	-- "offline"; -- Store offline messages
 	-- "c2s"; -- Handle client connections
-	"s2s"; -- Handle server-to-server connections
+	-- "s2s"; -- Handle server-to-server connections
 };
 
 -- Disable account creation by default, for security
 -- For more information see http://prosody.im/doc/creating_accounts
-allow_registration = false;
+allow_registration = true;
 
+-- Always set to false in Docker
 daemonize = false;
 
+-- Required for init scripts and prosodyctl
 pidfile = "/config/data/prosody.pid";
 
 -- Force clients to use encrypted connections? This option will
 -- prevent clients from authenticating unless they are using encryption.
 
-c2s_require_encryption = false
+c2s_require_encryption = true
 
 -- Force certificate authentication for server-to-server connections?
 -- This provides ideal security, but requires servers you communicate
@@ -106,13 +115,13 @@ c2s_require_encryption = false
 -- NOTE: Your version of LuaSec must support certificate verification!
 -- For more information see http://prosody.im/doc/s2s#security
 
-s2s_secure_auth = false
+s2s_secure_auth = true
 
 -- Many servers don't support encryption or have invalid or self-signed
 -- certificates. You can list domains here that will not be required to
 -- authenticate using certificates. They will be authenticated using DNS.
 
---s2s_insecure_domains = { "gmail.com" }
+s2s_insecure_domains = { "pegacorn-communicate-jitsi.site-a" }
 
 -- Even if you leave s2s_secure_auth disabled, you can still require valid
 -- certificates for some domains by specifying a list here.
@@ -126,7 +135,7 @@ s2s_secure_auth = false
 -- server please see http://prosody.im/doc/modules/mod_auth_internal_hashed
 -- for information about using the hashed backend.
 
-authentication = "internal_hashed"
+authentication = "internal_plain"
 
 -- Select the storage backend to use. By default Prosody uses flat files
 -- in its configured data directory, but it also supports more backends
@@ -151,9 +160,6 @@ log = {
 	{ levels = {min = "{{ $LOG_LEVEL }}"}, to = "console"};
 }
 
-{{ if .Env.GLOBAL_CONFIG }}
-{{ join "\n" (splitList "\\n" .Env.GLOBAL_CONFIG) }}
-{{ end }}
 
 -- Enable use of native prosody 0.11 support for epoll over select
 network_backend = "epoll";
@@ -162,7 +168,7 @@ network_settings = {
   tcp_backlog = 511;
 }
 
-component_interface = { "*" }
+--component_interface = "192.168.*.*"
 
 data_path = "/config/data"
 
@@ -171,4 +177,41 @@ smacks_hibernation_time = 60;
 smacks_max_hibernated_sessions = 1;
 smacks_max_old_sessions = 1;
 
-Include "conf.d/*.cfg.lua"
+Include "/config/conf.d/*.cfg.lua"
+
+bosh_ports = {
+	
+	   port = 5281;
+	   path = "http-bind";
+	   ssl = {
+				key = "/config/certs/pegacorn-communicate-jitsi.site-a.key";
+				certificate = "/config/certs/pegacorn-communicate-jitsi.site-a.crt"; 
+			 }
+
+ }
+
+----------- Virtual hosts -----------
+-- You need to add a VirtualHost entry for each domain you wish Prosody to serve.
+-- Settings under each VirtualHost entry apply *only* to that host.
+
+
+VirtualHost "pegacorn-communicate-jitsi.site-a"
+    enabled = "true"
+	ssl = {
+        key = "/config/certs/pegacorn-communicate-jitsi.site-a.key";
+        certificate = "/config/certs/pegacorn-communicate-jitsi.site-a.crt";
+    }
+    --authentication = "anonymous"
+
+VirtualHost "auth.pegacorn-communicate-jitsi.site-a"
+	ssl = {
+        key = "/config/certs/auth.pegacorn-communicate-jitsi.site-a.key";
+        certificate = "/config/certs/auth.pegacorn-communicate-jitsi.site-a.crt";
+    }
+    --authentication = "internal_plain"
+
+Component "jitsi-videobridge.pegacorn-communicate-jitsi.site-a"
+	--component_secret = "BZG24LfS"
+Component "focus.pegacorn-communicate-jitsi.site-a"
+	--component_secret = "1A9GpgXt"
+Component "conference.pegacorn-communicate-jitsi.site-a" "muc"

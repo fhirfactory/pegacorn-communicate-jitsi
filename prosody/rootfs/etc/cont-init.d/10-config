@@ -78,16 +78,4 @@ fi
 
 mkdir -p /config/certs
 
-if [[ ! -f /config/certs/$XMPP_DOMAIN.crt ]]; then
-    # echo for using all default values
-    echo | prosodyctl --config $PROSODY_CFG cert generate $XMPP_DOMAIN
-fi
-
-if [[ ! -f /config/certs/$XMPP_AUTH_DOMAIN.crt ]]; then
-    # echo for using all default values
-    echo | prosodyctl --config $PROSODY_CFG cert generate $XMPP_AUTH_DOMAIN
-fi
-
-# certs will be created in /config/data
-mv /config/data/*.{crt,key} /config/certs/ || true
-rm -f /config/data/*.cnf
+# Removed section code to generate certs - we have our own certs
