@@ -23,8 +23,8 @@
 -- (see http://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
 admins = {
-    "focus@auth.pegacorn-communicate-jitsi.site-a",
-    "jvb@auth.pegacorn-communicate-jitsi.site-a"
+    "focus@auth.pegacorn-communicate.australiaeast.cloudapp.azure.com",
+    "jvb@auth.pegacorn-communicate.australiaeast.cloudapp.azure.com"
 }
 consider_bosh_secure = true;
 cross_domain_bosh = true;
@@ -121,7 +121,7 @@ s2s_secure_auth = true
 -- certificates. You can list domains here that will not be required to
 -- authenticate using certificates. They will be authenticated using DNS.
 
-s2s_insecure_domains = { "pegacorn-communicate-jitsi.site-a" }
+-- s2s_insecure_domains = { "pegacorn-communicate.australiaeast.cloudapp.azure.com" }
 
 -- Even if you leave s2s_secure_auth disabled, you can still require valid
 -- certificates for some domains by specifying a list here.
@@ -184,9 +184,9 @@ bosh_ports = {
 	   port = 5281;
 	   path = "http-bind";
 	   ssl = {
-				key = "/config/certs/pegacorn-communicate-jitsi.site-a.key";
-				certificate = "/config/certs/pegacorn-communicate-jitsi.site-a.crt"; 
-			 }
+		key = "/config/certs/pegacorn-communicate-jitsi.site-a.key";
+		certificate = "/config/certs/pegacorn-communicate-jitsi.site-a.crt"; 
+		}
 
  }
 
@@ -195,7 +195,7 @@ bosh_ports = {
 -- Settings under each VirtualHost entry apply *only* to that host.
 
 
-VirtualHost "pegacorn-communicate-jitsi.site-a"
+VirtualHost "pegacorn-communicate.australiaeast.cloudapp.azure.com"
     enabled = "true"
 	ssl = {
         key = "/config/certs/pegacorn-communicate-jitsi.site-a.key";
@@ -203,15 +203,15 @@ VirtualHost "pegacorn-communicate-jitsi.site-a"
     }
     --authentication = "anonymous"
 
-VirtualHost "auth.pegacorn-communicate-jitsi.site-a"
+VirtualHost "auth.pegacorn-communicate.australiaeast.cloudapp.azure.com"
 	ssl = {
         key = "/config/certs/auth.pegacorn-communicate-jitsi.site-a.key";
         certificate = "/config/certs/auth.pegacorn-communicate-jitsi.site-a.crt";
     }
     --authentication = "internal_plain"
 
-Component "jitsi-videobridge.pegacorn-communicate-jitsi.site-a"
+Component "jitsi-videobridge.pegacorn-communicate.australiaeast.cloudapp.azure.com"
 	--component_secret = "BZG24LfS"
 Component "focus.pegacorn-communicate-jitsi.site-a"
 	--component_secret = "1A9GpgXt"
-Component "conference.pegacorn-communicate-jitsi.site-a" "muc"
+Component "conference.pegacorn-communicate.australiaeast.cloudapp.azure.com" "muc"

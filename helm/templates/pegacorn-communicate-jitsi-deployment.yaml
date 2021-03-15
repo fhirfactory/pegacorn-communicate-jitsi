@@ -39,23 +39,19 @@ spec:
       containers:
       # Configure jicofo
         - name: jicofo
-          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jicofo:{{ .Values.imageTag }}            
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jicofo:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
-          lifecycle:
-            postStart:
-              exec:
-                command: ["/bin/bash","-c","service jicofo start"]
           env:
             - name: XMPP_SERVER
               value: "127.0.0.1"
             - name: XMPP_DOMAIN
-              value: pegacorn-communicate-jitsi.site-a
+              value: pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_AUTH_DOMAIN
-              value: auth.pegacorn-communicate-jitsi.site-a
+              value: auth.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_MUC_DOMAIN
-              value: muc.pegacorn-communicate-jitsi.site-a
+              value: muc.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.pegacorn-communicate-jitsi.site-a
+              value: internal-muc.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: JICOFO_COMPONENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -73,12 +69,12 @@ spec:
             - name: JVB_BREWERY_MUC
               value: jvbbrewery
             # - name: JICOFO_HOSTNAME
-            #   value: pegacorn-communicate-jitsi.site-a
+              # value: pegacorn-communicate.australiaeast.cloudapp.azure.com
             # - name: JICOFO_AUTH_DOMAIN
-            #   value: auth.pegacorn-communicate-jitsi.site-a      
+              # value: auth.pegacorn-communicate.australiaeast.cloudapp.azure.com
       # Configure prosody
         - name: prosody
-          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-prosody:{{ .Values.imageTag }}            
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-prosody:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
           ports:
           - containerPort: 5222
@@ -101,13 +97,13 @@ spec:
             mountPath: /config/certs
           env:
             - name: XMPP_DOMAIN
-              value: pegacorn-communicate-jitsi.site-a
+              value: pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_AUTH_DOMAIN
-              value: auth.pegacorn-communicate-jitsi.site-a
+              value: auth.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_MUC_DOMAIN
-              value: muc.pegacorn-communicate-jitsi.site-a
+              value: muc.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.pegacorn-communicate-jitsi.site-a
+              value: internal-muc.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: JICOFO_COMPONENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -132,14 +128,14 @@ spec:
             - name: JVB_TCP_HARVESTER_DISABLED
               value: "true"
             - name: PUBLIC_URL
-              value: https://pegacorn-communicate-jitsi.site-a
+              value: https://pegacorn-communicate.australiaeast.cloudapp.azure.com:30810
       # Configure nginx
         - name: nginx
-          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-web:{{ .Values.imageTag }}            
-          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }} 
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-web:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
           volumeMounts:
           - name: nginx-certs
-            mountPath: /config/keys         
+            mountPath: /config/keys
           ports:
           - containerPort: 80
             name: http
@@ -153,40 +149,40 @@ spec:
             - name: JICOFO_AUTH_USER
               value: focus
             - name: XMPP_DOMAIN
-              value: pegacorn-communicate-jitsi.site-a
+              value: pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_AUTH_DOMAIN
-              value: auth.pegacorn-communicate-jitsi.site-a
+              value: auth.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.pegacorn-communicate-jitsi.site-a
+              value: internal-muc.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_BOSH_URL_BASE
-              value: http://pegacorn-communicate-jitsi.site-a:5280
+              value: http://13.75.163.94:30733
             - name: XMPP_MUC_DOMAIN
-              value: muc.pegacorn-communicate-jitsi.site-a
+              value: muc.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: TZ
               value: Australia/Sydney
             - name: JVB_TCP_HARVESTER_DISABLED
               value: "true"
             - name: PUBLIC_URL
-              value: https://pegacorn-communicate-jitsi.site-a
+              value: https://pegacorn-communicate.australiaeast.cloudapp.azure.com:30810
       # Configure jvb
         - name: jvb
-          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jvb:{{ .Values.imageTag }}            
+          image: {{ .Values.dockerRepo }}pegacorn-communicate-jitsi-jvb:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
-          lifecycle:
-            postStart:
-              exec:
-                command: ["/bin/bash","-c","service jitsi-videobridge2 start"]
+          ports:
+          - containerPort: 30300
+            name: jvb-udp
+            protocol: UDP
           env:
             - name: XMPP_SERVER
               value: "127.0.0.1"
             - name: DOCKER_HOST_ADDRESS
-              value: "192.168.0.10"
+              value: "13.75.163.94"
             - name: XMPP_DOMAIN
-              value: pegacorn-communicate-jitsi.site-a
+              value: pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_AUTH_DOMAIN
-              value: auth.pegacorn-communicate-jitsi.site-a
+              value: auth.pegacorn-communicate.australiaeast.cloudapp.azure.com
             - name: XMPP_INTERNAL_MUC_DOMAIN
-              value: internal-muc.pegacorn-communicate-jitsi.site-a
+              value: internal-muc.pegacorn-communicate.australiaeast.cloudapp.azure.com
             # - name: JVB_STUN_SERVERS
             #   value: stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302 (Replace with Pegacorn stun server)
             - name: JICOFO_AUTH_USER
@@ -212,4 +208,4 @@ spec:
             - name: JVB_BREWERY_MUC
               value: jvbbrewery
             - name: PUBLIC_URL
-              value: https://pegacorn-communicate-jitsi.site-a
+              value: https://pegacorn-communicate.australiaeast.cloudapp.azure.com:30810
