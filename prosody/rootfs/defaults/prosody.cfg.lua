@@ -212,6 +212,6 @@ VirtualHost "auth.pegacorn-communicate.australiaeast.cloudapp.azure.com"
 
 Component "jitsi-videobridge.pegacorn-communicate.australiaeast.cloudapp.azure.com"
 	--component_secret = "BZG24LfS"
-Component "focus.pegacorn-communicate-jitsi.site-a"
+Component "focus.pegacorn-communicate.australiaeast.cloudapp.azure.com"
 	--component_secret = "1A9GpgXt"
 Component "conference.pegacorn-communicate.australiaeast.cloudapp.azure.com" "muc"

@@ -28,6 +28,8 @@ spec:
     port: 443
     protocol: TCP
     targetPort: 443
+    # Exposing my https node port
+    nodePort: 30810
   - name: xmpp-client
     port: 5222
     protocol: TCP
@@ -40,6 +42,8 @@ spec:
     port: 5280
     protocol: TCP
     targetPort: 5280
+    # Expose bosh port
+    nodePort: 30733
   - name: bosh-https
     port: 5281
     protocol: TCP
@@ -56,4 +60,3 @@ spec:
   {{- if (.Values.loadBalancerIP) }}
   loadBalancerIP: {{ .Values.loadBalancerIP }}
   {{- end }}
-
