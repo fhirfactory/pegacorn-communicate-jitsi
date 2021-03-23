@@ -1,0 +1,36 @@
+========================================================================================================
+Main reference for this task: https://github.com/jitsi/docker-jitsi-meet/tree/master/examples/kubernetes
+
+Created two base images:
+fhirfactory/pegacorn-base-java-docker-jitsi:1.0.0
+fhirfactory/pegacorn-base-docker-jitsi:1.0.0
+
+4 major components:
+- Prosody
+- Jicofo
+- Jitsi-videobridge (JVB)
+- Web (Nginx)
+
+Requisites:
+- Generated domain certificate and key using LetsEncrypt. (This would be replaced by certs from SSICT)
+
+Prosody:
+- Removed sections that auto-generate certs from LetsEncrypt
+- Main file is prosody.cfg.lua (can we mount this and apply changes without rebuilding image?). Several modifications applied.
+
+Jicofo:
+- No changes
+
+Jitsi-videobridge:
+- In jvb.conf, changed port under public settings from 9090 to 9095.
+Port 9090 was already in use for me (This may not apply in other environments)
+
+Web:
+- Installed nano (used during testing)
+- Updated settings in meet.conf (Ref: https://prosody.im/doc/setting_up_bosh)
+- Updated ssl.conf to use acquired certificates. Removed all entries to generate certs via LetsEncrypt on the fly
+- Updated 10-config. Removed script section to generate certs using LETSENCRYPT
+
+Helm:
+- Created separate yaml service file for UDP connections
+- Node port values are statically supplied to the Public URL and BOSH http-bind address (This should not be required with proper load balancing)
